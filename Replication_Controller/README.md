@@ -19,3 +19,29 @@ Kubernetes can probe a container using one of the three mechanisms:
 
 * An Exec probe executes an arbitrary command inside the container and checks the command’s exit status code. If the status code is 0, the probe is successful.
   All other codes are considered failures.
+
+##  Creating a ReplicationController
+![image](https://github.com/user-attachments/assets/0862d7a3-8676-459f-a63a-552af9d5daaf)
+
+* Although a pod isn’t tied to a ReplicationController, the pod does reference it in the metadata.ownerReferences field, which you can use to easily
+  find which ReplicationController a pod belongs to.
+
+##  Horizontally scaling pods
+You’ve seen how ReplicationControllers make sure a specific number of pod instances
+is always running. Because it’s incredibly simple to change the desired number of replicas, this also means scaling pods horizontally is trivial. <br>
+We can use the below command to scale replicas in rc:
+
+```bash
+   kubectl scale rc <rc-name> --replicas=10
+```
+
+* When deleting a ReplicationController with kubectl delete, you can keep its
+pods running by passing the --cascade=false option to the command. <br>
+```bash
+   kubectl delete rc <rc-name> --cascade=false
+```
+
+
+
+
+  
