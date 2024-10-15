@@ -62,3 +62,10 @@ directory.
  **9. ports**: Defines the ports that the container exposes.
 
  **10. containerPort**: Indicates the port number that the container listens on. Here, it’s set to 80, which is the default port for HTTP traffic.
+
+ ## Deleting a pod by name
+ By deleting a pod, you’re instructing Kubernetes to terminate all the containers that are
+part of that pod. Kubernetes sends a SIGTERM signal to the process and waits a certain
+number of seconds (30 by default) for it to shut down gracefully. If it doesn’t shut down
+in time, the process is then killed through SIGKILL. To make sure your processes are
+always shut down gracefully, they need to handle the SIGTERM signal properly. 
