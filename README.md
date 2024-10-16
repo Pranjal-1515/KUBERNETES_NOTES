@@ -1,2 +1,7 @@
-# KUBERNETES_NOTES
-Kubernetes Notes
+# KUBERNETES_NOTES: Contents
+
+* PODS
+* Replication Controller
+* DaemonSet
+* Services
+
