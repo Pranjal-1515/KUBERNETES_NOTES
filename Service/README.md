@@ -119,6 +119,14 @@ Let me explain what’s happening. The browser is using keep-alive connections a
 connection every time. Services work at the connection level, so when a connection to a service is first opened, a random pod is selected and then all network packets belonging
 to that connection are all sent to that single pod. Even if session affinity is set to None, users will always hit the same pod (until the connection is closed).
 
+## Exposing Services Externally Through An Ingress Resource
+One important reason is that each LoadBalancer service requires its own load balancer with its own public IP address, whereas an Ingress only requires one, even when
+providing access to dozens of services. When a client sends an HTTP request to the Ingress, the host and path in the request determine which service the request is forwarded to. <br>
+
+**Note:** Ingresses operate at the application layer of the network stack (HTTP) and can provide features such as cookie-based session affinity and the like, which services can’t.
+
+
+
 
 
 
