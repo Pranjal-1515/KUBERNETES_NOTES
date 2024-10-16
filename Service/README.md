@@ -39,3 +39,69 @@ obtain the cluster IP of your service (using kubectl get svc, for example). When
      arguments that start with a dash. But in your case, if you don’t use the double dash
      there, the -s option would be interpreted as an option for kubectl exec and would
      result in the misleading error
+
+## Session Affinity On The Service     
+If you execute the same command a few more times, you should hit a different pod
+with every invocation, because the service proxy normally forwards each connection
+to a randomly selected backing pod, even if the connections are coming from the
+same client. <br>
+ If, on the other hand, you want all requests made by a certain client to be redirected to the same pod every time, you can set the service’s sessionAffinity property
+to ClientIP (instead of None, which is the default), This makes the service proxy redirect all requests originating from the same client IP
+to the same pod. As an exercise, you can create an additional service with session affinity set to ClientIP and try sending requests to it. <br>
+ Kubernetes supports only two types of service session affinity: None and ClientIP. You may be surprised it doesn’t have a cookie-based session affinity option, but you
+need to understand that Kubernetes services don’t operate at the HTTP level. Services deal with TCP and UDP packets and don’t care about the payload they carry. Because
+cookies are a construct of the HTTP protocol, services don’t know about them, which explains why session affinity cannot be based on cookies.
+
+## Exposing Multiple Ports In The Same Service
+Services can also support multiple ports. For example, if your pods listened on two ports—let’s say 8080 for HTTP and 8443 for
+HTTPS—you could use a single service to forward both port 80 and 443 to the pod’s ports 8080 and 8443. You don’t need to create two different services in such cases. Using
+a single, multi-port service exposes all the service’s ports through a single cluster IP
+
+## Endpoints
+In Kubernetes, an Endpoint is an object that represents a set of network endpoints (IP addresses and ports) for a service. When you create a Service in Kubernetes, it abstracts a group of Pods that provide the same functionality. The Endpoint object maintains the list of IP addresses of the Pods that match the Service's selector. <br>
+Although the pod selector is defined in the service spec, it’s not used directly when redirecting incoming connections. Instead, the selector is used to build a list of IPs
+and ports, which is then stored in the Endpoints resource. When a client connects to a service, the service proxy selects one of those IP and port pairs and redirects the
+incoming connection to the server listening at that location.
+
+## Exposing Services To External Clients
+
+* **Setting the service type to NodePort:** For a NodePort service, each cluster node
+opens a port on the node itself (hence the name) and redirects traffic received
+on that port to the underlying service. The service isn’t accessible only at the
+internal cluster IP and port, but also through a dedicated port on all nodes. 
+
+* **Setting the service type to LoadBalancer, an extension of the NodePort type:** This
+makes the service accessible through a dedicated load balancer, provisioned
+from the cloud infrastructure Kubernetes is running on. The load balancer redirects traffic to the node port across all the nodes. Clients connect to the service
+through the load balancer’s IP.
+ 
+* **Creating an Ingress resource, a radically different mechanism for exposing multiple services through a single IP address:** It operates at the HTTP level (network layer 7)
+and can thus offer more features than layer 4 services can.
+
+## Using a NodePort service
+The first method of exposing a set of pods to external clients is by creating a service
+and setting its type to NodePort. By creating a NodePort service, you make Kubernetes
+reserve a port on all its nodes (the same port number is used across all of them) and
+forward incoming connections to the pods that are part of the service. 
+This is similar to a regular service (their actual type is ClusterIP), but a NodePort
+service can be accessed not only through the service’s internal cluster IP, but also
+through any node’s IP and the reserved node port. 
+This will make more sense when you try interacting with a NodePort service.
+
+## Examining Your Nodeport Service 
+Look at the EXTERNAL-IP column. It shows <nodes>, indicating the service is accessible
+through the IP address of any cluster node. The PORT(S) column shows both the
+internal port of the cluster IP (80) and the node port (30123). The service is accessible at the following addresses:
+
+* 10.111.254.223:80
+* <1st node’s IP>:30123
+* <2nd node’s IP>:30123, and so on.
+  
+Your service exposed on port 30123 of both of your cluster nodes.
+An incoming connection to one of those ports will be redirected to a randomly selected pod, which may or may not be the one running on the
+node the connection is being made to.
+
+
+
+
+ 
