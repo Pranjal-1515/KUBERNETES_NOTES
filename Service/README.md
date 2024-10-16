@@ -101,6 +101,26 @@ Your service exposed on port 30123 of both of your cluster nodes.
 An incoming connection to one of those ports will be redirected to a randomly selected pod, which may or may not be the one running on the
 node the connection is being made to.
 
+## Exposing A Service Through An External Load Balancer
+Kubernetes clusters running on cloud providers usually support the automatic provision of a load balancer from the cloud infrastructure. All you need to do is set the
+service’s type to LoadBalancer instead of NodePort. The load balancer will have its own unique, publicly accessible IP address and will redirect all connections to your
+service. <br> You can thus access your service through the load balancer’s IP address. If Kubernetes is running in an environment that doesn’t support LoadBalancer
+services, the load balancer will not be provisioned, but the service will still behave like
+a NodePort service. That’s because a LoadBalancer service is an extension of a NodePort service
+
+![image](https://github.com/user-attachments/assets/f01ba64a-b4da-47d9-8c9e-340ad11ae9b8)
+
+
+## Session Affinity And Web Browsers
+Because your service is now exposed externally, you may try accessing it with your web browser. You’ll see something that may strike you as odd—the browser will hit
+the exact same pod every time. Did the service’s session affinity change in the meantime? With kubectl describe, you can double-check that the service’s session
+affinity is still set to None, so why don’t different browser requests hit different pods, as is the case when using curl? <br>
+Let me explain what’s happening. The browser is using keep-alive connections and sends all its requests through a single connection, whereas curl opens a new
+connection every time. Services work at the connection level, so when a connection to a service is first opened, a random pod is selected and then all network packets belonging
+to that connection are all sent to that single pod. Even if session affinity is set to None, users will always hit the same pod (until the connection is closed).
+
+
+
 
 
 
