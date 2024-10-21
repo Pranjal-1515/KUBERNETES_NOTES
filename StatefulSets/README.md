@@ -46,5 +46,14 @@ StatefulSet must guarantee at-most-one semantics for stateful pod instances.
 however, you need to create a StatefulSet and see how it behaves. You’ll also learn a
 few more things about them along the way.
 
+## SCALING A STATEFULSET
+Scaling down a StatefulSet and scaling it back up after an extended time period
+should be no different than deleting a pod and having the StatefulSet recreate it
+immediately. Remember that scaling down a StatefulSet only deletes the pods, but
+leaves the PersistentVolumeClaims untouched. I’ll let you try scaling down the StatefulSet yourself and confirm this behavior. 
+The key thing to remember is that scaling down (and up) is performed gradually—similar to how individual pods are created when the StatefulSet is created initially. When scaling down by more than one instance, the pod with the highest ordinal
+number is deleted first. Only after the pod terminates completely is the pod with the
+second highest ordinal number deleted. 
+
 
 
