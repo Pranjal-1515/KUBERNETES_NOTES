@@ -125,3 +125,43 @@ it explicitly.
 process of being deleted, as well as in non-existing namespaces.
 * ResourceQuota—Ensures pods in a certain namespace only use as much CPU
 and memory as has been allotted to the namespace.
+
+## Understanding the Scheduler
+The Kubernetes Scheduler is a core component of the Kubernetes control plane that is responsible for selecting which node an unscheduled pod should run on. It makes these decisions based on various factors, including resource requirements, constraints, and policies defined by the user.
+
+## Introducing the controllers running in the Controller Manager
+The API server doesn’t do anything except store resources in
+etcd and notify clients about the change. The Scheduler only assigns a node to the
+pod, so you need other active components to make sure the actual state of the system
+converges toward the desired state, as specified in the resources deployed through the
+API server. This work is done by controllers running inside the Controller Manager. 
+ The single Controller Manager process currently combines a multitude of controllers performing various reconciliation tasks. Eventually those controllers will be split
+up into separate processes, enabling you to replace each one with a custom implementation if necessary. The list of these controllers includes the:
+
+* Replication Manager (a controller for ReplicationController resources)
+* ReplicaSet, DaemonSet, and Job controller
+* Deployment controller
+* StatefulSet controller
+* Node controller
+* Service controller
+* Endpoints controller
+* Namespace controller
+* PersistentVolume controller
+* Others
+
+## UNDERSTANDING THE KUBELET’S JOB
+In a nutshell, the Kubelet is the component responsible for everything running on a
+worker node. Its initial job is to register the node it’s running on by creating a Node
+resource in the API server. Then it needs to continuously monitor the API server for
+Pods that have been scheduled to the node, and start the pod’s containers. It does this
+by telling the configured container runtime (which is Docker, CoreOS’ rkt, or something else) to run a container from a specific container image. The Kubelet then constantly monitors running containers and reports their status, events, and resource
+consumption to the API server. 
+ The Kubelet is also the component that runs the container liveness probes, restarting containers when the probes fail. Lastly, it terminates containers when their Pod is
+deleted from the API server and notifies the server that the pod has terminated.
+
+## Kubernetes Service Proxy
+Beside the Kubelet, every worker node also runs the kube-proxy, whose purpose is to
+make sure clients can connect to the services you define through the Kubernetes API.
+The kube-proxy makes sure connections to the service IP and port end up at one of
+the pods backing that service (or other, non-pod service endpoints). When a service is
+backed by more than one pod, the proxy performs load balancing across those pods.
