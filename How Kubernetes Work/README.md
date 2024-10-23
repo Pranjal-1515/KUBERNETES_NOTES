@@ -180,7 +180,7 @@ the time between the update of the Service or Endpoints resource and the time th
 DNS pod receives the watch notification, the DNS records may be invalid.
 
 ## HOW (MOST) INGRESS CONTROLLERS WORK
-Unlike the DNS add-on, you’ll find a few different implementations of Ingress controllers, but most of them work in the same way. An Ingress controller runs a reverse
+Unlike the DNS add-on, you’ll find a few different implementations of Ingress controllers, but most of them work in the same way. An Ingress controller runs a reverse
 proxy server (like Nginx, for example), and keeps it configured according to the
 Ingress, Service, and Endpoints resources defined in the cluster. The controller thus
 needs to observe those resources (again, through the watch mechanism) and change
