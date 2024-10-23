@@ -165,3 +165,27 @@ make sure clients can connect to the services you define through the Kubernetes 
 The kube-proxy makes sure connections to the service IP and port end up at one of
 the pods backing that service (or other, non-pod service endpoints). When a service is
 backed by more than one pod, the proxy performs load balancing across those pods.
+
+## HOW THE DNS SERVER WORKS
+All the pods in the cluster are configured to use the cluster’s internal DNS server by
+default. This allows pods to easily look up services by name or even the pod’s IP
+addresses in the case of headless services.
+ The DNS server pod is exposed through the kube-dns service, allowing the pod to
+be moved around the cluster, like any other pod. The service’s IP address is specified
+as the nameserver in the /etc/resolv.conf file inside every container deployed in the
+cluster. The kube-dns pod uses the API server’s watch mechanism to observe changes
+to Services and Endpoints and updates its DNS records with every change, allowing its
+clients to always get (fairly) up-to-date DNS information. I say fairly because during
+the time between the update of the Service or Endpoints resource and the time the
+DNS pod receives the watch notification, the DNS records may be invalid.
+
+## HOW (MOST) INGRESS CONTROLLERS WORK
+Unlike the DNS add-on, you’ll find a few different implementations of Ingress controllers, but most of them work in the same way. An Ingress controller runs a reverse
+proxy server (like Nginx, for example), and keeps it configured according to the
+Ingress, Service, and Endpoints resources defined in the cluster. The controller thus
+needs to observe those resources (again, through the watch mechanism) and change
+the proxy server’s config every time one of them changes. 
+ Although the Ingress resource’s definition points to a Service, Ingress controllers
+forward traffic to the service’s pod directly instead of going through the service IP.
+This affects the preservation of client IPs when external clients connect through the
+Ingress controller, which makes them preferred over Services in certain use cases.
