@@ -95,3 +95,17 @@ remove nodes whenever necessary. By configuring the Scheduler to use the MostReq
 it requests. By keeping pods tightly packed, certain nodes are left vacant and can be
 removed. Because you’re paying for individual nodes, this saves you money.
 
+## Limit For The Amount Of Resources A Container Can Use
+CPU is a compressible resource, which means the amount used by a container can
+be throttled without affecting the process running in the container in an adverse way.
+Memory is obviously different—it’s incompressible. Once a process is given a chunk of
+memory, that memory can’t be taken away from it until it’s released by the process
+itself. That’s why you need to limit the maximum amount of memory a container can
+be given. 
+ Without limiting memory, a container (or a pod) running on a worker node may
+eat up all the available memory and affect all other pods on the node and any new
+pods scheduled to the node (remember that new pods are scheduled to the node
+based on the memory requests and not actual memory usage). A single malfunctioning or malicious pod can practically make the whole node unusable.
+
+![image](https://github.com/user-attachments/assets/964409e0-e54a-4336-9423-ac9741cebe85)
+
