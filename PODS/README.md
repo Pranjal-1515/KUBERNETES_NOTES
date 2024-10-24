@@ -69,3 +69,29 @@ part of that pod. Kubernetes sends a SIGTERM signal to the process and waits a c
 number of seconds (30 by default) for it to shut down gracefully. If it doesn’t shut down
 in time, the process is then killed through SIGKILL. To make sure your processes are
 always shut down gracefully, they need to handle the SIGTERM signal properly. 
+
+## Requesting resources for a pod’s containers
+When creating a pod, you can specify the amount of CPU and memory that a container needs (these are called requests) and a hard limit on what it may consume
+(known as limits). They’re specified for each container individually, not for the pod as
+a whole. The pod’s resource requests and limits are the sum of the requests and limits of all its containers. 
+
+![image](https://github.com/user-attachments/assets/0155058c-b1ba-4ca4-b2ab-42315daf1b9f)
+
+## UNDERSTANDING HOW THE SCHEDULER USES PODS’ REQUESTS WHEN SELECTING THE BEST NODE FOR A POD
+Scheduler first filters the list of nodes to
+exclude those that the pod can’t fit on and then prioritizes the remaining nodes per the
+configured prioritization functions. Among others, two prioritization functions rank
+nodes based on the amount of resources requested: LeastRequestedPriority and
+MostRequestedPriority. The first one prefers nodes with fewer requested resources
+(with a greater amount of unallocated resources), whereas the second one is the exact
+opposite—it prefers nodes that have the most requested resources (a smaller amount of
+unallocated CPU and memory). But, as we’ve discussed, they both consider the amount
+of requested resources, not the amount of resources actually consumed.
+ The Scheduler is configured to use only one of those functions. You may wonder
+why anyone would want to use the MostRequestedPriority function. After all, if you
+have a set of nodes, you usually want to spread CPU load evenly across them. However,
+that’s not the case when running on cloud infrastructure, where you can add and
+remove nodes whenever necessary. By configuring the Scheduler to use the MostRequestedPriority function, you guarantee that Kubernetes will use the smallest possible number of nodes while still providing each pod with the amount of CPU/memory
+it requests. By keeping pods tightly packed, certain nodes are left vacant and can be
+removed. Because you’re paying for individual nodes, this saves you money.
+
